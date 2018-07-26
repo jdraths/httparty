@@ -36,14 +36,38 @@ module HTTParty
           # https://github.com/jnunemaker/httparty/pull/585
           memo += %(; filename="#{File.basename(value.path)}") if file?(value)
           memo += "\r\n"
-          puts "multipart value: #{value}, class: #{value.class}"
-          memo += "Content-Type: application/octet-stream\r\n" if file?(value)
+          if file?(value)
+            # 1. check if 'ruby-mime-types' gem is 'required' in system
+            if defined?(MimeMagic)
+              puts 'MimeMagic is currently required'
+              ctype = MimeMagic.by_magic(file).type
+            elsif which("file")
+              # 2. OR - try to use unix 'file' shell command
+              # `file --mime -b "#{file.path}"`.chomp
+              ctype = `file --mime -b "#{file.path}"`.chomp
+            else
+              ctype = "application/octet-stream"
+            end
+            memo += "Content-Type: #{ctype}\r\n"
+          end
           memo += "\r\n"
           memo += file?(value) ? value.read : value.to_s
           memo += "\r\n"
         end
 
         multipart += "--#{boundary}--\r\n"
+      end
+
+      # from https://stackoverflow.com/a/5471032/2628223
+      def which(cmd)
+        exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+        ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+          exts.each { |ext|
+            exe = File.join(path, "#{cmd}#{ext}")
+            return exe if File.executable?(exe) && !File.directory?(exe)
+          }
+        end
+        return nil
       end
 
       def has_file?(hash)
