@@ -36,6 +36,7 @@ module HTTParty
           # https://github.com/jnunemaker/httparty/pull/585
           memo += %(; filename="#{File.basename(value.path)}") if file?(value)
           memo += "\r\n"
+          puts "multipart value: #{value}, class: #{value.class}"
           memo += "Content-Type: application/octet-stream\r\n" if file?(value)
           memo += "\r\n"
           memo += file?(value) ? value.read : value.to_s
