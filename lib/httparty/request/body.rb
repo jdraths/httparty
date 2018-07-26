@@ -40,11 +40,11 @@ module HTTParty
             # 1. check if 'ruby-mime-types' gem is 'required' in system
             if defined?(MimeMagic)
               puts 'MimeMagic is currently required'
-              ctype = MimeMagic.by_magic(file).type
+              ctype = MimeMagic.by_magic(value).type
             elsif which("file")
               # 2. OR - try to use unix 'file' shell command
               # `file --mime -b "#{file.path}"`.chomp
-              ctype = `file --mime -b "#{file.path}"`.chomp
+              ctype = `file --mime -b "#{value.path}"`.chomp
             else
               ctype = "application/octet-stream"
             end
